@@ -1,29 +1,13 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-#       camera.py
-#
-#       Copyright 2011 ganesh <ganeshredcobra@gmail.com>
-#
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
+#! /usr/bin/env python
 
 import serial,os
 import time
 import commands
+import pygame
+import subprocess
 
+pygame.init()
+sound=pygame.mixer.Sound('bonus.wav')
 path=os.path.realpath("Pictures/Capture")
 if os.path.exists(path):
     os.chdir(path)
@@ -32,12 +16,14 @@ else:
     os.chdir(path)
 raw=commands.getoutput("dmesg | grep 'FTDI USB Serial Device converter now attached to'")
 port=raw[-7:]
-ser = serial.Serial("/dev/%s"%port, 9600, timeout=1)
+#print port
+ser = serial.Serial("/dev/%s"%port,baudrate=9600,timeout=None)
 prev_state=None
+
 while True:
     ser.flushInput()
     data=ser.readline().strip()
-    #print data
+    print data
     if data=="0":
         if prev_state==None:
             prev_state=data
@@ -48,7 +34,9 @@ while True:
         elif prev_state=="0":
             status=commands.getoutput('ls')
             if status=='':
-                os.system('gphoto2 --capture-image-and-download --filename "pic00.jpg"')
+                os.system('gphoto2 --capture-image-and-download --filename "pic00.jpg"&')
+                os.system('eog --fullscreen pic00.jpg &')
+                sound.play()
             else:
                 files=status.split()
                 #last_file=files.sort()
@@ -56,11 +44,19 @@ while True:
                 #print count
                 name=int(count)+01
                 #print name
-                os.system('gphoto2 --capture-image-and-download --filename "pic%02d.jpg"'%name)
-                os.system('pkill eog &')
-                os.system('eog --fullscreen pic%02d.jpg &'%name)
+                os.system('gphoto2 --capture-image-and-download --filename "pic%02d.jpg" &'%name)
+                #time.sleep(5.0)
+                #stat,op=commands.getstatusoutput('gphoto2 --capture-image-and-download --filename "pic%02d.jpg" '%name)
+                #print p
+                #if stat==0:
+                    #os.system('pkill eog &')
+                    #os.system('eog --fullscreen pic%02d.jpg &'%name)
+                    #sound.play()
+                #else:
+                    #pass
         prev_state=data
     else:
         pass
+        print "vvv"
 
 
