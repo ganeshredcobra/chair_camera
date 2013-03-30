@@ -17,7 +17,7 @@ void loop()
  {
    Serial.println(0);
  }
-  //delay(100)  ;
+  delay(100)  ;
   
 }
 int ReadSens_and_Condition(){
